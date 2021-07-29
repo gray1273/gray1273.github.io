@@ -43,7 +43,7 @@ class ChessBoard {
                     color = "black";
                 }
                 //Create each column for each row with a class, an embedded image, and onlick method
-                strDiv += "<td class = \""+color+"\"onclick=\"space(["+i+","+k+"])\"id=\""+i+""+k+"\"><img id = \"i"+i+k+"\" src = \"\" class = \"centerPiece\"></img></td>";
+                strDiv += "<td class = \""+color+"\"onclick=\"space(["+i+","+k+"])\"id=\""+i+""+k+"\"></td>";
             }
             strDiv += "</tr>";
         }
@@ -62,25 +62,29 @@ class ChessBoard {
     updateBoard(){
         for(let i = 1; i <=8; i++){
             for(let k = 1; k <=8; k++){
-                var squareID = "i"+i+""+k;
+
+
+
+                var squareID = i+""+k;
                 //console.log(squareID);
-                document.getElementById(squareID).src = "";
+                document.getElementById(squareID).innerHTML = "";
             }
         }
         //Adds the black pieces to the spot they belong
         for(let i = 0; i < this.deck.inUseBlackPieces.length; i++){
             //Set pieces on board
             var temp = this.deck.inUseBlackPieces[i].get_pos;
-            var squareID = "i" + temp[0] + temp[1];
-            document.getElementById(squareID).src = this.deck.inUseBlackPieces[i].get_source;
+
+            var squareID =  temp[0] +""+ temp[1];
+            document.getElementById(squareID).innerHTML = "<img id = \"i"+temp[0]+""+temp[1]+"\" class = \"centerPiece\" src = \"" +this.deck.inUseBlackPieces[i].get_source +"\"</img>";
         }
         //Adds the white pieces to the spot that they belong
         for(let i = 0; i < this.deck.inUseWhitePieces.length; i++){
             var temp = this.deck.inUseWhitePieces[i].get_pos;
             
-            var squareID = "i"+ temp[0] + temp[1];
+            var squareID =  temp[0] +""+ temp[1];
             //console.log(squareID);
-            document.getElementById(squareID).src = this.deck.inUseWhitePieces[i].get_source;
+            document.getElementById(squareID).innerHTML = "<img id = \"i"+temp[0]+""+temp[1]+"\" class = \"centerPiece\" src = \"" +this.deck.inUseWhitePieces[i].get_source+"\"</img>";
         }
         
         
