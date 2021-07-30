@@ -4,6 +4,9 @@
 .callout-buttons{
 	padding: 1%;
 }
+.home{
+	background-color: black;
+}
 
 .fa-square{
 	transform:rotate(45deg);
@@ -89,5 +92,6 @@ p {
 	white-space: pre-line;
 	text-align: center;
 	font-weight: bold;
+	color: white;
 	
 }
