@@ -8,7 +8,7 @@ class ChessBoard {
         this.blackKingCheck = false;
         this.checkingBlackKing = [];
         this.checkingWhiteKing = [];
-        
+
     }
     set_turn(turn){
         this.turn = turn;
@@ -54,7 +54,7 @@ class ChessBoard {
     document.getElementById("theBoard").innerHTML = strDiv;
     //Update the board with the pieces
     this.updateBoard();
-    
+
     }
 
 
@@ -81,14 +81,14 @@ class ChessBoard {
         //Adds the white pieces to the spot that they belong
         for(let i = 0; i < this.deck.inUseWhitePieces.length; i++){
             var temp = this.deck.inUseWhitePieces[i].get_pos;
-            
+
             var squareID =  temp[0] +""+ temp[1];
             //console.log(squareID);
             document.getElementById(squareID).innerHTML = "<img id = \"i"+temp[0]+""+temp[1]+"\" class = \"centerPiece\" src = \"" +this.deck.inUseWhitePieces[i].get_source+"\"</img>";
         }
-        
-        
-        
+
+
+
     }
 
 
@@ -109,7 +109,7 @@ class ChessBoard {
 
 
     checkClick(position){
-        
+
         console.log("---------CHECK CLICK--------------")
         var piece;
         var color;
@@ -134,28 +134,34 @@ class ChessBoard {
         this.deck.selectedPieces.push(position);
         if(this.deck.selectedPieces.length == 1){
             if(this.deck.findIfPosFilled(position)){
-                
+
                 piece = this.deck.findByPos(position);
                 color = piece.get_color;
-                
+
                 type = piece.get_type;
+                //Check if you can block
+                this.deck.validMoves = this.deck.validMoves.concat(this.canBlock(piece));
+                if(this.deck.validMoves.length != 0){
+                    usable.push(piece);
+                    isUsable = true;
+                }
                 if(color == "White" && this.checkingWhiteKing.length == 1){
-                   
+
                     usable = this.findWhiteMovesInCheck(this.checkingWhiteKing[0]);
-        
-                
+
+
                     for(let k = 0; k<usable.length; k++){
                         if(usable[k].get_id == piece.get_id){
                             isUsable = true;
                         }
                     }
 
-                   
+
                 }else if(color == "Black" && this.checkingBlackKing.length == 1){
-                    
+
                     usable = this.findBlackMovesInCheck(this.checkingBlackKing[0]);
-        
-                    
+
+
                     for(let k = 0; k< usable.length; k++){
                         if(usable[k].get_id == piece.get_id){
                             isUsable = true;
@@ -163,7 +169,7 @@ class ChessBoard {
                     }
                 }
                 if(color == this.get_turn && type == "King"){
-                    
+
                     var squareID = position[0] + "" + position[1];
 	                var nameClass = document.getElementById(squareID).className;
                     nameClass = nameClass + " selected"
@@ -175,7 +181,7 @@ class ChessBoard {
                         this.deck.validMoves = this.validWhiteKingMoves(piece);
                     }else{
                         this.deck.validMoves = this.validBlackKingMoves(piece);
-                    }       
+                    }
                     this.turnGreen();
                 }else if(color == this.get_turn && isUsable){
                     var squareID = position[0] + "" + position[1];
@@ -201,11 +207,15 @@ class ChessBoard {
                         case "Knight":
                             moves = this.movementKnight(piece);
                             break;
-                    } 
+                    }
+
+         
+                       
+
+
 
 
                     if(this.turn == "White"){
-                        
                         for(let i = 0; i < this.checkingWhiteKing.length; i++){
                             //NEED TO CROSS CHECK WITH THE PIECES ACTUAL MOVES
                             for(let k = 0; k<moves.length; k++){
@@ -220,6 +230,11 @@ class ChessBoard {
                                     this.deck.validMoves.push(this.checkingBlackKing[i].get_pos);
                             }
                     }
+
+                 
+
+
+
 
 
                 }
@@ -251,8 +266,8 @@ class ChessBoard {
                 this.deck.selectedPieces.splice(1,1);
             }
             else{
-            
-                
+
+
                 for(let i = 0; i<this.deck.validMoves.length; i++){
                     if(arrayEquals(this.deck.selectedPieces[1],this.deck.validMoves[i])){
 
@@ -264,12 +279,12 @@ class ChessBoard {
                         this.movePiece(pos1,pos2);
                     }
                 }
-                
+
              }
 
         }
         //Update the function to get out of check
-        
+
 
     }
 
@@ -278,7 +293,7 @@ class ChessBoard {
 
 
     nonCheckClick(position){
-        
+
         console.log("==============NONCHECK CLICK================")
         var piece;
         var color;
@@ -288,9 +303,11 @@ class ChessBoard {
         this.checkingWhiteKing = [];
         this.checkingBlackKing = [];
         this.deck.selectedPieces.push(position);
+
+
         if(this.deck.selectedPieces.length == 1){
             if(this.deck.findIfPosFilled(position)){
-                
+
                 piece = this.deck.findByPos(position);
                 color = piece.get_color;
                 type = piece.get_type;
@@ -325,7 +342,44 @@ class ChessBoard {
                         case "Knight":
                             this.deck.validMoves = this.movementKnight(piece);
                             break;
-                    } 
+                    }
+                    var tempMoves = [];
+                    tempMoves = this.deck.validMoves;
+                    this.deck.validMoves = [];
+                    var originalPos = piece.get_pos;
+                    var doesCheck = false;
+                    var whiteMoves;
+                    var blackMoves;
+                    var whiteKingPos;
+                    var blackKingPos;
+                    for(let i = 0; i<tempMoves.length; i++){
+                        piece.set_pos(tempMoves[i]);
+                        if(piece.get_color == "White"){
+                            whiteKingPos = this.deck.findWhiteKing();
+                            blackMoves = this.findBlackMoves();
+                            for(let k = 0; k<blackMoves.length;k++){
+                                if(arrayEquals(blackMoves[k], whiteKingPos)){
+                                    doesCheck = true;
+                                }
+                            }
+                        }else{
+                            blackKingPos = this.deck.findBlackKing();
+                            whiteMoves = this.findWhiteMoves();
+                            for(let k = 0; k<whiteMoves.length;k++){
+                                if(arrayEquals(whiteMoves[k], blackKingPos)){
+                                    doesCheck = true;
+                                }
+                            }
+                        }
+                        if(!doesCheck){
+                            this.deck.validMoves.push(tempMoves[i]);
+                        }
+                        piece.set_pos(originalPos);
+                        doesCheck = false;
+                    }
+
+
+
                     this.turnGreen();
                 }else{
                     this.deck.selectedPieces = [];
@@ -342,6 +396,17 @@ class ChessBoard {
                     validSpot = true;
                 }
             }
+            //Check to see if moving the piece would cause check
+           /*  if(this.deck.findIfPosFilled(this.deck.selectedPieces[0])){
+                var tempPiece = this.deck.findByPos(this.deck.selectedPieces[0]);
+                tempPiece.set_pos(this.deck.selectedPieces[1]);
+                if(this.checkIfCheck(tempPiece.get_color)){
+                    validSpot = false;
+                }
+                tempPiece.set_pos(this.deck.selectedPieces[0]); 
+            } */
+
+
             if(arrayEquals(this.deck.selectedPieces[0],this.deck.selectedPieces[1])){
                 this.deck.selectedPieces = [];
                 this.deck.validMoves = [];
@@ -358,7 +423,7 @@ class ChessBoard {
                         this.deck.selectedPieces = [];
                         this.removeSelected();
                         this.removeGreen();
-                        
+
                         this.movePiece(pos1,pos2);
                     }
                 }
@@ -388,7 +453,7 @@ class ChessBoard {
 			}
 			canKingMoveHere = true;
 		}
-        
+
         //See if king can safely move to spots
         for(let i = 0; i < kingMoves.length; i++){
             doesMoveWork = true;
@@ -400,7 +465,7 @@ class ChessBoard {
                         this.deck.inUseBlackPieces.splice(k,1);
                     }
                 }
-                
+
                 blackMoves = this.findBlackMoves();
                 //Check if king being there would be a problem
                 for(let k =0; k<blackMoves.length; k++){
@@ -415,7 +480,7 @@ class ChessBoard {
                     finalMoves.push(kingMoves[i]);
                 }
                 this.deck.inUseBlackPieces.push(piece);
-                
+
             }else{
                 //Temp remove king piece for calculations
                 for(let w = 0; w<this.deck.inUseWhitePieces.length; w++){
@@ -426,11 +491,11 @@ class ChessBoard {
                 blackMoves = this.findBlackMoves();
                 //Check if king being there would be a problem
                 for(let k =0; k<blackMoves.length; k++){
-                   
+
                         if(arrayEquals(blackMoves[k],kingMoves[i])){
                            doesMoveWork = false;
                         }
-                    
+
                 }
                 this.deck.inUseWhitePieces.push(kingPiece);
                 if(doesMoveWork){
@@ -446,13 +511,13 @@ class ChessBoard {
             for(let k = 0; k < this.deck.inUseBlackPieces.length; k++){
                 if(this.deck.inUseBlackPieces[k].get_type == "Pawn"){
                     var pos = this.deck.inUseBlackPieces[k].get_pos;
-                    
+
                     //console.log("Original Pawn Position: " + pos);
 
-                    
+
                     //console.log("New position (Unchanged) " + this.deck.inUseWhitePieces[k].get_pos);
                     var temp = finalMoves[i];
-                    if(temp[0] == (pos[0]-1) && temp[1] == (pos[1]+1)){ 
+                    if(temp[0] == (pos[0]-1) && temp[1] == (pos[1]+1)){
                         doesMoveWork = false;
                     }else if(temp[0] == (pos[0]-1) && temp[1] == (pos[1]-1)){
                         doesMoveWork = false;
@@ -464,10 +529,10 @@ class ChessBoard {
                 returnMoves.push(finalMoves[i]);
             }
         }
-        
+
         //console.log("Ending " + returnMoves);
 		return returnMoves;
-        
+
 	}
 
 
@@ -483,7 +548,7 @@ class ChessBoard {
         var returnMoves = [];
 		var canKingMoveHere = true;
         var doesMoveWork = true;
-        
+
 		for(let i = 0; i < kingMovesOriginal.length; i++){
 			for(let k = 0; k<whiteMoves.length; k++){
 				if(arrayEquals(whiteMoves[k],kingMovesOriginal[i])){
@@ -495,18 +560,18 @@ class ChessBoard {
 			}
 			canKingMoveHere = true;
 		}
-        
-        
+
+
 
         //check to see if next move is safe
-       
+
        for(let i = 0; i < kingMoves.length; i++){
            doesMoveWork = true;
-           
+
 			if(this.deck.findIfPosFilled(kingMoves[i])){
-                
+
                 var piece = this.deck.findByPos(kingMoves[i]);
-                
+
                 //Dont have to check if the piece is the same color, it is guaranteed to not be
                 //Delete piece, check if king moving there is an issue, replace piece.
 
@@ -514,11 +579,11 @@ class ChessBoard {
                     if(this.deck.inUseWhitePieces[k].get_id == piece.get_id){
                         //console.log("Removing "+ piece +" from white pieces");
                         this.deck.inUseWhitePieces.splice(k,1);
-                        
-                        
+
+
                     }
                 }
-                
+
                 whiteMoves = this.findWhiteMoves();
 
 
@@ -534,10 +599,10 @@ class ChessBoard {
                     finalMoves.push(kingMoves[i]);
                 }
                 this.deck.inUseWhitePieces.push(piece);
-                
+
             }else{
-                
-               
+
+
                 for(let w = 0; w<this.deck.inUseBlackPieces.length; w++){
                     if(this.deck.inUseBlackPieces[w].get_type == "King"){
                         this.deck.inUseBlackPieces.splice(w,1);
@@ -546,37 +611,37 @@ class ChessBoard {
                 whiteMoves = this.findWhiteMoves();
                 //Check if king being there would be a problem
                 for(let k =0; k<whiteMoves.length; k++){
-                    
+
                         if(arrayEquals(whiteMoves[k],kingMoves[i])){
                             //Do not add
                             //console.log("Removing "+ kingMoves[i]+" from black king moves");
                             //kingMoves.splice(i,1);
                             doesMoveWork = false;
                         }else{
-                            
+
                         }
-                    
+
                 }
                 if(doesMoveWork){
                     finalMoves.push(kingMoves[i]);
                 }
                 this.deck.inUseBlackPieces.push(kingPiece);
             }
-		} 
-        
+		}
+
         //Remove pieces that are diagonal to pawn checking
         for(let i = 0; i < finalMoves.length; i++){
             doesMoveWork = true;
             for(let k = 0; k < this.deck.inUseWhitePieces.length; k++){
                 if(this.deck.inUseWhitePieces[k].get_type == "Pawn"){
                     var pos = this.deck.inUseWhitePieces[k].get_pos;
-                    
+
                     //console.log("Original Pawn Position: " + pos);
 
-                    
+
                     //console.log("New position (Unchanged) " + this.deck.inUseWhitePieces[k].get_pos);
                     var temp = finalMoves[i];
-                    if(temp[0] == (pos[0]+1) && temp[1] == (pos[1]+1)){ 
+                    if(temp[0] == (pos[0]+1) && temp[1] == (pos[1]+1)){
                         doesMoveWork = false;
                     }else if(temp[0] == (pos[0]+1) && temp[1] == (pos[1]-1)){
                         doesMoveWork = false;
@@ -588,9 +653,9 @@ class ChessBoard {
                 returnMoves.push(finalMoves[i]);
             }
         }
-        
+
         //console.log("Ending " + returnMoves);
-		return returnMoves; 
+		return returnMoves;
         //return finalMoves;
 	}
 
@@ -745,11 +810,11 @@ class ChessBoard {
 	}
 
     movePiece(position1, position2){
-        
+
         console.log("Piece moved:     Start: "+ position1 + " Ending: " + position2);
-        
+
         var letter = ["","A","B","C","D","E","F","G","H"];
-       
+
         var temp = [];
         var validMoveBool = false;
         var deletePiece;
@@ -761,7 +826,7 @@ class ChessBoard {
             var enPassPiece;
             if(type == "Pawn"){
 
-                
+
                 //Check en passant removal
                 if(position1[1] != position2[1]){
                     //Pawn moved diagonally
@@ -778,7 +843,7 @@ class ChessBoard {
                                     }
                                 }
                             }
-                            
+
                         }else{
                             if(this.deck.findIfPosFilled([4,position2[1]])){
                                 enPassPiece = this.deck.findByPos([4,position2[1]]);
@@ -788,20 +853,20 @@ class ChessBoard {
                                     }
                                 }
                             }
-                            
+
                         }
-                        
+
 
                     }
                 }
             }
 
 
-            
-            
+
+
             for(let i = 0; i<this.deck.validMoves.length; i++){
                 temp = this.deck.validMoves[i];
-                
+
                 if(position2[0] == temp[0] && position2[1] == temp[1]){
                     //update position, refresh board
                     validMoveBool = true;
@@ -840,8 +905,8 @@ class ChessBoard {
 
                 }
             }
-           
-            
+
+
             if(validMoveBool){
                 piece.set_pos(position2);
                 piece.add_moves(position1 + " moved to " + position2);
@@ -849,13 +914,13 @@ class ChessBoard {
                 var tempStr;
                 var str = document.getElementById("lastMoves");
                 tempStr = str.textContent;
-                
+
                 str.textContent = piece.get_color+" "+piece.get_type + " at "+letter[position1[1]] + "" + position1[0]+" moved to " + letter[position2[1]] + "" + position2[0]+ " \r\n";
                 str.textContent += tempStr;
-                
+
                 //console.log(piece.get_moves);
                 //Check if the new position puts the other king in check
-                
+
                 //Check to see if pawn promotes, remove it and call promoteQueen with it.
                 if(type == "Pawn"){
 
@@ -882,7 +947,7 @@ class ChessBoard {
                         if(piece.get_color == "White"){
                             //Find and set white rook with ID of 12 to [1,6]
                             rook = this.deck.findRook("White", "12");
-                           
+
                             rook.set_pos([1,6]);
                         }else{
                             //Find and set black rook with ID of 12 to [8,6]
@@ -899,14 +964,14 @@ class ChessBoard {
                 this.checkIfCheck("Black");
 
                 //this.didLastPieceCheck(piece);
-                
+
             }else{
                 alert("Invalid Move");
                 //Restore turn
                 this.flipTurn();
             }
             this.deck.validMoves = [];
-            
+
     }
     }
 
@@ -937,7 +1002,7 @@ class ChessBoard {
                     }
                 }
                 if(canLeft){
-                    output.push([1,3]); 
+                    output.push([1,3]);
                 }
            }
            if(rightRook.get_moves.length == 0){
@@ -947,7 +1012,7 @@ class ChessBoard {
                 }
             }
             if(canRight){
-                output.push([1,7]); 
+                output.push([1,7]);
             }
            }
 
@@ -983,7 +1048,7 @@ class ChessBoard {
                     }
                 }
                 if(canLeft){
-                    output.push([8,3]); 
+                    output.push([8,3]);
                 }
            }
            if(rightRook.get_moves.length == 0){
@@ -993,7 +1058,7 @@ class ChessBoard {
                 }
             }
             if(canRight){
-                output.push([8,7]); 
+                output.push([8,7]);
             }
            }
 
@@ -1051,7 +1116,7 @@ class ChessBoard {
     }
 
 
-   
+
 
 
 
@@ -1103,7 +1168,7 @@ class ChessBoard {
         }
         return check;
     }
-    
+
 
 
 
@@ -1112,13 +1177,28 @@ class ChessBoard {
         var availableKingMoves = [];
         var canKingMove = true;
         var isMate = false;
+        var blocking = [];
+        
         var outcome = [];
         if(color == "White"){
            availableKingMoves = this.validWhiteKingMoves();
+           for(let i = 0; i <this.deck.inUseWhitePieces.length; i++){
+                var piece = this.deck.inUseWhitePieces[i];
+               if(piece.get_type != "King" || piece.get_type != "Pawn"){
+                    blocking = blocking.concat(this.canBlock(piece));
+               }
+           }
         }else{
             availableKingMoves = this.validBlackKingMoves();
+            console.log("Length: " + this.deck.inUseBlackPieces.length);
+            for(let i = 0; i <this.deck.inUseBlackPieces.length; i++){
+                var piece = this.deck.inUseBlackPieces[i];
+                if(piece.get_type != "King" || piece.get_type != "Pawn" ){
+                    blocking = blocking.concat(this.canBlock(piece));
+                }
+           }
         }
-        
+
         if(availableKingMoves.length == 0){
             canKingMove = false;
         }
@@ -1136,6 +1216,8 @@ class ChessBoard {
             }
         if(outcome.length == 0){
             isMate = true;
+        }else{
+            isMate = false;
         }
         //If availableKingMoves is 0 then the king cannot get out of check by moving.
         //Proceed to check if the king can get out of the check by using other pieces
@@ -1143,6 +1225,20 @@ class ChessBoard {
         //If the pieces that have the king in check overlap with spots you can move then maybe the king is not mated
         //Deal with edge case, a piece that is not checking the king but would be if your piece takes one in check.
         }
+
+
+        //Check to see if block can be performed
+        if(blocking.length == 0){
+            isMate = true;
+        }else{
+            isMate = false;
+        }
+
+
+
+
+
+
         return isMate;
     }
 
@@ -1158,7 +1254,7 @@ class ChessBoard {
                  }
             }else {
                 outcome.push([pos[0],pos[1]]);
-            }   
+            }
         }
         return outcome;
 
@@ -1168,7 +1264,7 @@ class ChessBoard {
         var type;
         var validMoves = [];
         type = piece.get_type;
-        
+
         switch(type){
             case "King":
                 validMoves = this.movementKing(piece);
@@ -1194,19 +1290,104 @@ class ChessBoard {
 
 
 
+    
+    canBlock(piece){
+        var outcome = [];
+        var originalPos = piece.get_pos;
+        var doesCheck = false;
+        var whiteMoves = [];
+        var blackMoves = [];
+        var whiteKingPos;
+        var blackKingPos;
+        var moves = [];
+    
+                moves = this.getMoves(piece);
+                for(let i = 0; i<moves.length; i++){
+                    console.log("Moves: " + moves[i]);
+                    piece.set_pos(moves[i]);
+        
+        
+                    if(piece.get_color == "White"){
+                        whiteKingPos = this.deck.findWhiteKing();
+                        blackMoves = this.findBlackMoves();
+                        for(let k = 0; k<blackMoves.length;k++){
+                            if(arrayEquals(blackMoves[k], whiteKingPos)){
+                                doesCheck = true;
+                            }
+                        }
+                        
+                    }else{
+                        blackKingPos = this.deck.findBlackKing();
+                        whiteMoves = this.findWhiteMoves();
+                        for(let k = 0; k<whiteMoves.length;k++){
+                            if(arrayEquals(whiteMoves[k], blackKingPos)){
+                                doesCheck = true;
+                            }
+                        }
+                       
+                    }
+                    if(!doesCheck){
+                        console.log("Adding Move: " + moves[i]);
+                        outcome.push(moves[i]);
+                    }
+                    piece.set_pos(originalPos);
+                    doesCheck = false;
+                }
+        
 
+        
 
+        return outcome;
+}
 
 
     //======================================================================================================================
 
+    /* if(piece.get_type == "Queen" || piece.get_type == "Rook" || piece.get_type == "Bishop"){
+        var originalPos = piece.get_pos;
+        var doesCheck = false;
+        var whiteMoves;
+        var blackMoves;
+        var whiteKingPos;
+        var blackKingPos;
+        for(let i = 0; i<moves.length; i++){
+            console.log("Moves: " + moves[i]);
+            piece.set_pos(moves[i]);
 
+
+            if(piece.get_color == "White"){
+                whiteKingPos = this.deck.findWhiteKing();
+                blackMoves = this.findBlackMoves();
+                for(let k = 0; k<blackMoves.length;k++){
+                    if(arrayEquals(blackMoves[k], whiteKingPos)){
+                        doesCheck = true;
+                    }
+                }
+                
+            }else{
+                blackKingPos = this.deck.findBlackKing();
+                whiteMoves = this.findWhiteMoves();
+                for(let k = 0; k<whiteMoves.length;k++){
+                    if(arrayEquals(whiteMoves[k], blackKingPos)){
+                        doesCheck = true;
+                    }
+                }
+               
+            }
+            if(!doesCheck){
+                console.log("Adding Move: " + moves[i]);
+                this.deck.validMoves.push(moves[i]);
+            }
+            piece.set_pos(originalPos);
+            doesCheck = false;
+        }
+    }  */  
 
 
     //======================================================================================================================
     //Movement logic
     movementRook(piece){
-        
+
         var outcome = [];
         //outcome to be filled with all legal moves
         //Rooks can move vertically or horizontally
@@ -1215,76 +1396,77 @@ class ChessBoard {
         //Check Column
         //check up
         for(let i = startingPos[0]+1; i<= 8; i++){
-            
+
                 if(this.deck.findIfPosFilled([i,startingPos[1]])){
-                     
+
                         //Check to see if position filled by same or other piece
                         temp = this.deck.findByPos([i,startingPos[1]]);
                         if(temp.get_color != piece.get_color){
                             outcome.push([i,startingPos[1]]);
-                            
+
                         }
                         break;
-                       
+
                 }else{
                     outcome.push([i,startingPos[1]]);
-                    
+
                 }
-            
+
         }
         //check down
         for(let i = startingPos[0]-1; i>= 1; i--){
-            
+
             if(this.deck.findIfPosFilled([i,startingPos[1]])){
-                
+
                     //Check to see if position filled by same or other piece
                     temp = this.deck.findByPos([i,startingPos[1]]);
                     if(temp.get_color != piece.get_color){
                         outcome.push([i,startingPos[1]]);
-                        
+
                     }
                     break;
-                      
+
             }else{
                 outcome.push([i,startingPos[1]]);
-                
+
             }
-        
+
     }
         //Check Right
         for(let i = startingPos[1]+1; i<= 8; i++){
             if(this.deck.findIfPosFilled([startingPos[0],i])){
-                  
+
                     //Check to see if position filled by same or other piece
                     temp = this.deck.findByPos([startingPos[0],i]);
                     if(temp.get_color != piece.get_color){
                         outcome.push([startingPos[0],i]);
-                        
+
                     }
                     break;
-                
+
              }else{
                 outcome.push([startingPos[0],i]);
             }
-            
+
         }
         //Check Left
         for(let i = startingPos[1]-1; i>=1; i--){
             if(this.deck.findIfPosFilled([startingPos[0],i])){
-                
+
                     //Check to see if position filled by same or other piece
                     temp = this.deck.findByPos([startingPos[0],i]);
                     if(temp.get_color != piece.get_color){
                         outcome.push([startingPos[0],i]);
-                        
+
                     }
                     break;
              }else{
                 outcome.push([startingPos[0],i]);
             }
-            
+
         }
         //console.log(outcome);
+       
         return outcome;
     }
 
@@ -1311,13 +1493,13 @@ class ChessBoard {
                 }
                 //Check to see if can take diagonally to the right if its in col 1
                 if(col == 1){
-                    
+
                     if(this.deck.findIfPosFilled([startingPos[0]+1,startingPos[1]+1])){
                          hold = this.deck.findByPos([startingPos[0]+1,startingPos[1]+1]);
-                        
+
                         if(hold.get_color == "Black"){
                             outcome.push([startingPos[0]+1,startingPos[1]+1]);
-                            
+
                         }
                     }
                     //Check diagonally to the left if its in col 8.
@@ -1400,7 +1582,7 @@ class ChessBoard {
             }
 
             //Check to see if can take diagonally
-            
+
         }
         //Check en passant here
         if(color && temp == 5){
@@ -1430,10 +1612,10 @@ class ChessBoard {
 
                         }
                     }
-                } 
+                }
             }
-            
-            
+
+
         }else if(!color && temp == 4){
             var pawnPiece;
             var string;
@@ -1461,10 +1643,10 @@ class ChessBoard {
 
                         }
                     }
-                } 
+                }
             }
         }
-
+        
         return outcome;
 
     }
@@ -1481,7 +1663,7 @@ class ChessBoard {
         var temp;
         //King can move 8 spots
         //Check above row
-        
+
         //Need arrays of potential movement
         //Iterate through arrays and call method.
         for(let i = -1; i<2; i++){
@@ -1493,7 +1675,7 @@ class ChessBoard {
         }
         for(let k =0; k<potentialMoves.length; k++){
             temp = this.addValidSpot(potentialMoves[k],piece);
-            
+
             if(temp.length > 0){
                 outcome = outcome.concat(temp);
                 //console.log("Adding a valid spot");
@@ -1506,6 +1688,7 @@ class ChessBoard {
             outcome = outcome.concat(this.canBlackKingCastle());
         }
         //console.log(outcome);
+        
         return outcome;
     }
 
@@ -1517,9 +1700,10 @@ class ChessBoard {
     movementQueen(piece){
         var outcome = [];
         //Queen follows same rules as bishop and rook
-       
+
         outcome = this.movementBishop(piece).concat(this.movementRook(piece));
         //console.log(outcome);
+        
         return outcome;
     }
 
@@ -1553,18 +1737,19 @@ class ChessBoard {
         //Check the spots
         for(let k =0; k<potentialMoves.length; k++){
             temp = this.addValidSpot(potentialMoves[k],piece);
-            
+
             if(temp.length > 0){
                 outcome = outcome.concat(temp);
                 //console.log("Adding a valid spot");
             }
         }
 
-        
+
         //console.log(outcome);
+       
         return outcome;
     }
-    
+
 
     //Check diagonally until you reach end of board or another piece. Stop if friendly, add ability to take enemy pieces.
     movementBishop(piece){
@@ -1574,7 +1759,7 @@ class ChessBoard {
         var k;
         var j;
         var count = 1;
-        //two diagonals, split into fours 
+        //two diagonals, split into fours
         //Top Right
         for(let i = startingPos[0]+1; i<=8; i++){
                 k = startingPos[1]+count;
@@ -1582,30 +1767,30 @@ class ChessBoard {
                     hold = this.deck.findByPos([i,k]);
                     if(hold.get_color != piece.get_color){
                         outcome.push([i,k]);
-                        
+
                     }
                     break;
                 }else if(k<=8){
                     outcome.push([i,k]);
                 }
                 count++;
-        } 
+        }
         //Top Left
-        count = 1;  
+        count = 1;
         for(let i = startingPos[0]+1; i<=8; i++){
                 j = startingPos[1]-count;
                 if(this.deck.findIfPosFilled([i,j]) && j >= 1){
                     hold = this.deck.findByPos([i,j]);
                     if(hold.get_color != piece.get_color){
                         outcome.push([i,j]);
-                        
+
                     }
                     break;
                 }
                 else if (j>=1){
                     outcome.push([i,j]);
                 }
-        
+
             count++;
         }
         //Bottom Right
@@ -1616,7 +1801,7 @@ class ChessBoard {
                     hold = this.deck.findByPos([i,k]);
                     if(hold.get_color != piece.get_color){
                         outcome.push([i,k]);
-                        
+
                     }
                     break;
                 }else if(k<=8){
@@ -1626,7 +1811,7 @@ class ChessBoard {
         }
         //Bottom Left
         count =1;
-        for(let i = startingPos[0]-1; i>=1; i--){   
+        for(let i = startingPos[0]-1; i>=1; i--){
                 j = startingPos[1]-count;
                 if(this.deck.findIfPosFilled([i,j]) && j >=1){
                     hold = this.deck.findByPos([i,j]);
@@ -1638,12 +1823,11 @@ class ChessBoard {
                 else if (j>=1){
                     outcome.push([i,j]);
                 }
-            
+
             count++;
         }
         //console.log(outcome);
+        
         return outcome;
-    }   
+    }
 }
-
-
