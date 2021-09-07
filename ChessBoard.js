@@ -981,6 +981,8 @@ class ChessBoard {
         var rightRook;
         var canLeft = true;
         var canRight = true;
+        var leftRookExists = false;
+        var rightRookExists = false;
 
         //output refers to spots that the king can move to, not the rook spots
         var output = [];
@@ -990,32 +992,38 @@ class ChessBoard {
            for(let i = 0; i < this.deck.inUseWhitePieces.length; i++){
                if(this.deck.inUseWhitePieces[i].get_id == "13"){
                     leftRook = this.deck.inUseWhitePieces[i];
+                    leftRookExists = true;
                }else if(this.deck.inUseWhitePieces[i].get_id == "12"){
                     rightRook = this.deck.inUseWhitePieces[i];
+                    rightRookExists = true;
                }
            }
            //Check left rook and the intermediate pieces
-           if(leftRook.get_moves.length == 0){
-                for(let i = 2; i <= 4; i++){
-                    if(this.deck.findIfPosFilled([1,i])){
-                        canLeft = false;
+
+           if(leftRookExists){
+                if(leftRook.get_moves.length == 0){
+                        for(let i = 2; i <= 4; i++){
+                            if(this.deck.findIfPosFilled([1,i])){
+                                canLeft = false;
+                            }
+                        }
+                        if(canLeft){
+                            output.push([1,3]);
+                        }
+                }
+           }
+           if(rightRookExists){
+                if(rightRook.get_moves.length == 0){
+                    for(let i = 6; i <= 7; i++){
+                        if(this.deck.findIfPosFilled([1,i])){
+                            canRight = false;
+                        }
+                    }
+                    if(canRight){
+                        output.push([1,7]);
                     }
                 }
-                if(canLeft){
-                    output.push([1,3]);
-                }
            }
-           if(rightRook.get_moves.length == 0){
-            for(let i = 6; i <= 7; i++){
-                if(this.deck.findIfPosFilled([1,i])){
-                    canRight = false;
-                }
-            }
-            if(canRight){
-                output.push([1,7]);
-            }
-           }
-
 
         }
         return output;
@@ -1027,6 +1035,8 @@ class ChessBoard {
         var rightRook;
         var canLeft = true;
         var canRight = true;
+        var leftRookExists = false;
+        var rightRookExists = false;
 
         //output refers to spots that the king can move to, not the rook spots
         var output = [];
@@ -1036,32 +1046,37 @@ class ChessBoard {
            for(let i = 0; i < this.deck.inUseBlackPieces.length; i++){
                if(this.deck.inUseBlackPieces[i].get_id == "13"){
                     leftRook = this.deck.inUseBlackPieces[i];
+                    leftRookExists = true;
                }else if(this.deck.inUseBlackPieces[i].get_id == "12"){
                     rightRook = this.deck.inUseBlackPieces[i];
+                    rightRookExists = true;
                }
            }
            //Check left rook and the intermediate pieces
-           if(leftRook.get_moves.length == 0){
-                for(let i = 2; i <= 4; i++){
-                    if(this.deck.findIfPosFilled([8,i])){
-                        canLeft = false;
+           if(leftRookExists){
+                if(leftRook.get_moves.length == 0){
+                        for(let i = 2; i <= 4; i++){
+                            if(this.deck.findIfPosFilled([8,i])){
+                                canLeft = false;
+                            }
+                        }
+                        if(canLeft){
+                            output.push([8,3]);
+                        }
+                }
+            }
+            if(rightRookExists){
+                if(rightRook.get_moves.length == 0){
+                    for(let i = 6; i <= 7; i++){
+                        if(this.deck.findIfPosFilled([8,i])){
+                            canRight = false;
+                        }
+                    }
+                    if(canRight){
+                        output.push([8,7]);
                     }
                 }
-                if(canLeft){
-                    output.push([8,3]);
-                }
-           }
-           if(rightRook.get_moves.length == 0){
-            for(let i = 6; i <= 7; i++){
-                if(this.deck.findIfPosFilled([8,i])){
-                    canRight = false;
-                }
             }
-            if(canRight){
-                output.push([8,7]);
-            }
-           }
-
 
         }
         return output;
